@@ -6,9 +6,9 @@ with open('README.md') as f:
     readme = f.read()
 
 setup(
-    name='cycle_gan',
+    name='text_to_image',
     version=FULL_VERSION,
-    description='Cycle GAN tensorflow implementation.',
+    description='Text-to-Image model tensorflow implementation',
     long_description=readme,
     author='Asahi Ushio',
     author_email='aushio@keio.jp',
