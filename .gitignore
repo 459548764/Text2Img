@@ -9,6 +9,6 @@ build
 *.egg-info
 dist
 
-datasets
+dataset
 checkpoint
 glove_word_embedding
