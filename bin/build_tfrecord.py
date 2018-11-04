@@ -3,12 +3,11 @@
 import text2img
 import argparse
 
-SCALE = [64, 128, 256, 299]
 
 DATASET_PATH = dict(
     coco_2014=dict(
         valid=dict(
-            image='./datasets/coco/images/valid2014',
+            image='./datasets/coco/images/val2014',
             annotation='./datasets/coco/annotations/annotations/captions_val2014.json'
         ),
         train=dict(
@@ -18,7 +17,7 @@ DATASET_PATH = dict(
     ),
     coco_2017=dict(
         valid=dict(
-            image='./datasets/coco/images/valid2017',
+            image='./datasets/coco/images/val2017',
             annotation='./datasets/coco/annotations/annotations/captions_val2017.json'
         ),
         train=dict(

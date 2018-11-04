@@ -1,0 +1,40 @@
+<html>
+    <body>
+        <h1 style="font-family:helvetica;">
+            APP to check data: {{dataset}}
+        </h1>
+
+        <p>
+            <b>
+                <font size="4">
+                    Image
+                </font>
+            </b>
+        </p>
+
+        <p>
+            <img src="data:image/png;base64,{{ image }}" width="500">
+        </p>
+
+        <p>
+            <b>
+                <font size="4">
+                    Captions
+                </font>
+            </b>
+        </p>
+
+        <p style="font-family:helvetica;">
+            {% for cap in captions %}
+                <br> - {{ cap }} </br>
+            {% endfor %}
+        </p>
+
+    <br>
+        <form action = "/">
+            <p>
+                <input type = "submit" value = "next" style="height:200px; width:50px" />
+            </p>
+        </form>
+    </body>
+</html>
