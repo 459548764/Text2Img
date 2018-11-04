@@ -1,15 +1,17 @@
+import tensorflow as tf
 import os
 import json
-import tensorflow as tf
+import numpy as np
+from .tfrecorder import read_tfrecord
 
 
-class AttentionGAN:
+class SampleModel:
 
     def __init__(self,
                  path_to_tfrecord: str,
                  path_to_meta: str,
-                 batch: int = 1,
-                 n_thread: int = 1):
+                 batch: int=1,
+                 n_thread: int=1):
 
         if os.path.exists(path_to_meta):
             meta_dict = json.load(open(path_to_meta))
@@ -23,13 +25,13 @@ class AttentionGAN:
         else:
             raise ValueError('No meta file found.: %s' % path_to_meta)
 
-        self.__embedding_size = embedding_size
         self.__base_batch = batch
         self.__path_to_tfrecord = path_to_tfrecord
         self.__n_thread = n_thread
         self.__build_graph()
         self.session = tf.Session(config=tf.ConfigProto(log_device_placement=False))
         self.session.run(tf.global_variables_initializer())
+        self.__ini_flg = False
 
     def __iterator(self, batch_size):
         # load tfrecord instance
@@ -54,35 +56,33 @@ class AttentionGAN:
             tf.int64)
         iterator, self.ini_iterator = self.__iterator(self.batch_size)
         self.image, self.caption_word, self.caption_char, self.length_word, self.length_caption = iterator.get_next()
-        input_image = tf.cast(self.image, tf.float32)/255*2 - 1  # range -> [-1, 1]
 
-        # word embedding
-        with tf.device("/cpu:0"):
-            with tf.variable_scope("word_embedding"):
-                vocab_size = len(self.__dict_token)
-                # mask the weight of `out of vocabulary index (padding as well)` as 0
-                oov_index = tf.cast(0, tf.int32)
-                full_index = tf.expand_dims(tf.range(vocab_size, dtype=tf.int32), -1)
-                mask = tf.cast(tf.equal(full_index, oov_index), tf.float32)
-                # embedding matrix
-                var = tf.get_variable("embedding_matrix", [vocab_size, self.__embedding_size])
-                var = var * mask
-                emb_word = tf.nn.embedding_lookup(var, self.caption_word)
+    def initialization(self):
+        self.__ini_flg = True
+        self.session.run(self.ini_iterator, feed_dict={self.tfrecord_name: self.__path_to_tfrecord})
 
-        # self.__generator()
+    def get_data(self):
+        if not self.__ini_flg:
+            self.initialization()
+        try:
+            image, caption_word, caption_char, length_word, length_caption = self.session.run(
+                [self.image, self.caption_word, self.caption_char, self.length_word, self.length_caption]
+            )
+        except tf.errors.OutOfRangeError:
+            self.initialization()
+            image, caption_word, caption_char, length_word, length_caption = self.session.run(
+                [self.image, self.caption_word, self.caption_char, self.length_word, self.length_caption]
+            )
 
-        # tf.image.resize_images
+        image, caption_word, caption_char, length_word, length_caption = \
+            image[0], caption_word[0], caption_char[0], length_word[0], length_caption[0]
+        image = image.astype(np.uint8)
 
-    def __generator(self,
-                    seed_value,
-                    condition_feature,
-                    word_features):
-        """
+        captions = []
+        for i in range(length_caption):
+            captions.append(' '.join([self.__dict_token_inv[_i] for _i in caption_word[i][:length_word[i]]]))
 
-        :param seed_value: random seed value
-        :param condition_feature: conditional feature from sentence embedding
-        :param word_features: word features
-        :return:
-        """
+        return image, captions
+
 
 
